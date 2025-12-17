@@ -75,7 +75,7 @@ def cc_library(name, hdrs = [], **kwargs):
         copts = copts + SANITIZER_OPTS + COMPILER_COPTS,
         linkopts = linkopts + SANITIZER_OPTS,
         includes = ["include"],
-        defines = ["BAZEL"] + OS_DEFINES + ARCH_DEFINES + COMPILER_DEFINES,
+        defines = ["BAZEL"],
         deps = deps,
         **kwargs
     )

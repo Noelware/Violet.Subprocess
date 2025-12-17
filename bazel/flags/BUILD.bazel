@@ -42,7 +42,7 @@ filegroup(
 
 [config_setting(
     name = "%s_enabled" % san,
-    flag_values = {"//buildsystem/bazel/flags:%s" % san: "True"},
+    flag_values = {"//bazel/flags:%s" % san: "True"},
 ) for san in [
     "asan",
     "msan",

@@ -19,19 +19,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load("@rules_python//python:defs.bzl", "py_binary")
+FILES = glob(["*.h"])
 
-py_binary(
-    name = "bazeldist",
-    srcs = ["bazeldist.py"],
-    data = [
-        "//:distfiles",
-        "//bazel:files",
-        "//bazel/flags:files",
-        "//include/violet/Subprocess:srcs",
-        "//src:files",
-        # "//tests:files",
-    ],
-    visibility = ["//visibility:public"],
-    deps = ["@rules_python//python/runfiles"],
+exports_files(FILES)
+
+filegroup(
+    name = "files",
+    srcs = FILES + ["//include/violet/Subprocess:srcs"],
+    visibility = ["//:__subpackages__"],
 )
