@@ -31,6 +31,18 @@ bazel_dep(name = "googletest", version = "1.17.0.bcr.2")
 bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "rules_cc", version = "0.2.15")
 
+# TODO(@auguwu/Noel): use release version
+bazel_dep(name = "violet", version = "25.12")
+git_override(
+    module_name = "violet",
+    remote = "https://github.com/Noelware/violet.git",
+    commit = "5bba2e895e8e31e642c88fed0a4e4ef006c4e4c6",
+    patch_strip = 1,
+    patches = [
+        "patches/001_violet__remove_hcc.patch",
+    ],
+)
+
 ## :- START ~ DEVELOPMENT DEPENDENCIES -: ##
 
 # Used for various scripts in `hack/`
