@@ -1,0 +1,8 @@
+.cache/
+.direnv/
+.ci/
+.github/
+.vscode/
+build/
+
+compile_commands.json
