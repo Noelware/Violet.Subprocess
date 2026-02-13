@@ -19,12 +19,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FILES = glob(["*.h"])
-
-exports_files(FILES)
-
-filegroup(
-    name = "files",
-    srcs = FILES + ["//include/violet/Subprocess:srcs"],
-    visibility = ["//:__subpackages__"],
-)
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_cc", version = "0.2.15")

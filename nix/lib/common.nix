@@ -18,16 +18,30 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+pkgs: {
+  version = pkgs.lib.strings.trimWith {
+    start = true;
+    end = true;
+  } (builtins.readFile ../../.violet-version);
 
-FILES = glob(["*.cc"])
+  llvm = let
+    oldStdenv = pkgs.stdenv;
+    version = "21";
+    package = pkgs."llvmPackages_${version}";
+  in {
+    inherit version package;
+    inherit (package) compiler-rt libcxx bintools lldb;
 
-exports_files(FILES)
+    clang-tools = package.clang-tools.override {
+      enableLibcxx = true;
+    };
 
-filegroup(
-    name = "files",
-    srcs = FILES + [
-        "//src/background:srcs",
-        "//src/stdio:srcs",
-    ],
-    visibility = ["//:__subpackages__"],
-)
+    stdenv =
+      (
+        if oldStdenv.hostPlatform.isLinux
+        then pkgs.stdenvAdapters.useMoldLinker
+        else pkgs.lib.id
+      )
+      package.libcxxStdenv;
+  };
+}

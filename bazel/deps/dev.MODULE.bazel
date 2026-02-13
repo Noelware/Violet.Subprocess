@@ -19,12 +19,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FILES = glob(["*.cc"])
-
-exports_files(FILES)
-
-filegroup(
-    name = "srcs",
-    srcs = FILES,
-    visibility = ["//:__subpackages__"],
+# Hedron's Compile Commands Extractor for Bazel
+# https://github.com/hedronvision/bazel-compile-commands-extractor
+bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
+git_override(
+    module_name = "hedron_compile_commands",
+    commit = "abb61a688167623088f8768cc9264798df6a9d10",
+    patch_strip = 1,
+    patches = [
+        "patches/000_hedron_compile_commands__fix_assertion.patch",
+    ],
+    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
 )

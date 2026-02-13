@@ -19,12 +19,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FILES = glob(["*.cc"])
+prefix=@out@
+exec_prefix=\${prefix}
+includedir=\${prefix}/include
+libdir=\${prefix}/lib
 
-exports_files(FILES)
-
-filegroup(
-    name = "srcs",
-    srcs = FILES,
-    visibility = ["//:__subpackages__"],
-)
+Name: violet
+Description: C++20 library for subprocesses in a cross-platform, secure way
+Version: @version@
+Cflags: -I\${includedir}
+Libs: -L\${libdir}

@@ -20,60 +20,12 @@
 # SOFTWARE.
 
 load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
-load("@rules_cc//cc:defs.bzl", "cc_library")
-
-filegroup(
-    name = "distfiles",
-    srcs = glob(
-        ["**"],
-        exclude = [
-            ".agents/**",
-            ".ci/**",
-            ".github/**",
-            ".idea/**",
-            ".vscode/**",
-            ".git/**",
-            ".cache/**",
-            ".direnv/**",
-            ".dist/**",
-            "bazel-*/**",
-            "build/**",
-            "hack/**",
-            "nix/**",
-            "patches/**",
-            ".bazel*",
-            ".clang*",
-            "**/CMakeLists.txt",
-            "**/meson.build",
-            "**/meson_options.txt",
-            "**/*.cmake",
-            "**/*.cmake.in",
-            ".buildifier.json",
-            ".envrc",
-            "AGENTS.md",
-            "*.nix",
-            "flake.lock",
-            "MODULE.bazel.lock",
-            "renovate.json",
-            ".usr.bazelrc",
-            ".gitignore",
-            "compile_commands.json",
-        ],
-    ),
-    visibility = ["//visibility:public"],
-)
 
 refresh_compile_commands(
     name = "rcc",
 )
 
-cc_library(
-    name = "include_hack",
-    includes = ["include"],
-    visibility = ["//:__subpackages__"],
-)
-
-# Alias `--@violet_subprocess//:[a|s|t|ub]san` -> `--@violet_subprocess//bazel/flags:[a|s|t|ub]san`
+# Alias `--@violet.subprocess//:[a|s|t|ub]san` -> `--@violet.subprocess//bazel/flags:[a|s|t|ub]san`
 [alias(
     name = "%ssan" % san,
     actual = "//bazel/flags:%ssan" % san,

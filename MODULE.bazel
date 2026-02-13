@@ -20,45 +20,11 @@
 # SOFTWARE.
 
 module(
-    name = "violet_subprocess",
-    version = "25.12",
+    name = "violet.subprocess",
     compatibility_level = 0,
     repo_name = "org_noelware_violet_subprocess",
 )
 
-bazel_dep(name = "bazel_skylib", version = "1.9.0")
-bazel_dep(name = "googletest", version = "1.17.0.bcr.2")
-bazel_dep(name = "platforms", version = "1.0.0")
-bazel_dep(name = "rules_cc", version = "0.2.15")
-
-# TODO(@auguwu/Noel): use release version
-bazel_dep(name = "violet", version = "25.12")
-git_override(
-    module_name = "violet",
-    remote = "https://github.com/Noelware/violet.git",
-    commit = "5bba2e895e8e31e642c88fed0a4e4ef006c4e4c6",
-    patch_strip = 1,
-    patches = [
-        "patches/001_violet__remove_hcc.patch",
-    ],
-)
-
-## :- START ~ DEVELOPMENT DEPENDENCIES -: ##
-
-# Used for various scripts in `hack/`
-bazel_dep(name = "rules_python", version = "1.7.0")
-
-# Hedron's Compile Commands Extractor for Bazel
-# https://github.com/hedronvision/bazel-compile-commands-extractor
-bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
-git_override(
-    module_name = "hedron_compile_commands",
-    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
-    commit = "abb61a688167623088f8768cc9264798df6a9d10",
-    patches = [
-        "patches/000_hedron_compile_commands__fix_assertion.patch",
-    ],
-    patch_strip = 1,
-)
-
-## :- END ~ DEVELOPMENT DEPENDENCIES -: ##
+include("//bazel/deps:bzl.MODULE.bazel")
+include("//bazel/deps:cc.MODULE.bazel")
+include("//bazel/deps:dev.MODULE.bazel")

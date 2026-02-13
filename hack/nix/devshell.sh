@@ -22,6 +22,7 @@
 # SOFTWARE.
 # +---------------------------------------------------------------------------------+
 
+
 set -euo pipefail
 
 echo "[violet::devshell] Preparing environment..."
@@ -44,36 +45,52 @@ if [ ! -f "$CWD/.usr.bazelrc" ]; then
 # +=+ You are free to modify this to your heart's content. The shell environment  +=+
 # +=+ will hot-replace instead of overwriting your changes. You have been warned! +=+
 # +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
-#
 # This is a workaround for missing standard C++ headers on NixOS using the wrapped
 # \`clang\` interface.
 #
 # Related: https://github.com/NixOS/nixpkgs/issues/150655
-build --cxxopt=-xc++ --host_cxxopt=-xc++
+build --cxxopt=-xc++
+build --host_cxxopt=-xc++
+
+# Since we use \`clang\`, this can be used to set \$CXX and \$CC for Bazel
+build --action_env=CC=$(which clang++)
+build --action_env=CXX=$(which clang++)
+
+# For \`libc++\` linking
+build:libcxx --compiler=clang
+build:libcxx --cxxopt=-nostdinc++
+build:libcxx --cxxopt=-isystem@libcxx.dev@/include/c++/v1
+build:libcxx --linkopt=-L@libcxx@/lib
+build:libcxx --host_linkopt=-L@libcxx@/lib
 
 # This line here is where the real header files for sanitizers will be used.
 # DO NOT EDIT THIS. THE SHELL ENVIRONMENT WILL MODIFY THIS FOR NEW LLVM VERSIONS
 # BEING TESTED.
-build:san --copt=-I@compiler-rt@/include --host_copt=-I@compiler-rt@/include
+build:san --copt=-I@compiler-rt@/include
+build:san --host_copt=-I@compiler-rt@/include
 EOF
-else
-    echo "[violet::devshell] Hot-patching sanitizer includes if necessary..."
 
-    tgt="build:san --copt=-I@compiler-rt@/include --host_copt=-I@compiler-rt@/include"
-    if rg -q '^build:san' "$CWD/.usr.bazelrc"; then
-        current=$(rg '^build:san' "$CWD/.usr.bazelrc")
-        if [ "$current" != "$tgt" ]; then
-            echo "[violet::devshell] Detected mismatched sanitizer line! Patching..."
-            echo "                current = $current"
-            echo "                target  = $tgt"
-
-            sed -i "s|^build:san.*|$tgt|" "$CWD/.usr.bazelrc"
-        fi
-    else
-        echo "[violet::devshell] No sanitizer line found! Adding..."
-        printf "# This line here is where the real header files for sanitizers will be used.\n" >> "$CWD/.usr.bazelrc"
-        printf "# DO NOT EDIT THIS. THE SHELL ENVIRONMENT WILL MODIFY THIS FOR NEW LLVM VERSIONS\n" >> "$CWD/.usr.bazelrc"
-        printf "# BEING TESTED.\n" >> "$CWD/.usr.bazelrc"
-        printf "%s\n" "$tgt" >> "$CWD/.usr.bazelrc"
-    fi
 fi
+
+# TODO(@auguwu/Noel): make this more robust
+# else
+#     echo "[violet::devshell] Hot-patching sanitizer includes if necessary..."
+
+#     tgt="build:san --copt=-I@compiler-rt@/include --host_copt=-I@compiler-rt@/include"
+#     if rg -q '^build:san' "$CWD/.usr.bazelrc"; then
+#         current=$(rg '^build:san' "$CWD/.usr.bazelrc")
+#         if [ "$current" != "$tgt" ]; then
+#             echo "[violet::devshell] Detected mismatched sanitizer line! Patching..."
+#             echo "                current = $current"
+#             echo "                target  = $tgt"
+
+#             sed -i "s|^build:san.*|$tgt|" "$CWD/.usr.bazelrc"
+#         fi
+#     else
+#         echo "[violet::devshell] No sanitizer line found! Adding..."
+#         printf "# This line here is where the real header files for sanitizers will be used.\n" >> "$CWD/.usr.bazelrc"
+#         printf "# DO NOT EDIT THIS. THE SHELL ENVIRONMENT WILL MODIFY THIS FOR NEW LLVM VERSIONS\n" >> "$CWD/.usr.bazelrc"
+#         printf "# BEING TESTED.\n" >> "$CWD/.usr.bazelrc"
+#         printf "%s\n" "$tgt" >> "$CWD/.usr.bazelrc"
+#     fi
+# fi

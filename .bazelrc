@@ -33,6 +33,39 @@ common --enable_platform_specific_config
 startup --windows_enable_symlinks
 build:windows --enable_runfiles
 
+# macOS: Set Apple SDK to 15.5
+build:macos --macos_minimum_os=15.5
+
+# macOS (C++): Disable modules as Violet doesn't support it (yet) on macOS.
+build:macos --cxxopt=-fno-modules
+
+# macOS (C++): Disable layering and header checks. At some point, I'll see why
+# this doesn't work so we can have enable C++20 modules soon:tm:
+build:macos --features=-layering_check
+build:macos --features=-parse_headers
+
+# `--config=libcxx` (C++): Enables compilation and linking with libc++
+build:libcxx --cxxopt=-stdlib=libc++
+build:libcxx --linkopt=-stdlib=libc++
+build:libcxx --linkopt=-lc++
+build:libcxx --linkopt=-lc++abi
+
+# C++ (macOS, Linux): Disable warnings that are annoying
+build:linux --cxxopt=-Wno-unused-command-line-argument
+build:macos --cxxopt=-Wno-unused-command-line-argument
+
+# --config=cxx20: Test with C++20 (Linux, macOS)
+build:cxx20 --cxxopt=-std=c++20
+build:cxx20 --host_cxxopt=-std=c++20
+
+# --config=cxx23: Test with C++23 (Linux, macOS)
+build:cxx23 --cxxopt=-std=c++23
+build:cxx23 --host_cxxopt=-std=c++23
+
+# --config=cxx26: Test with C++26 (Linux, macOS)
+build:cxx26 --cxxopt=-std=c++26
+build:cxx26 --host_cxxopt=-std=c++26
+
 # Only show errors in test output
 test --test_output=errors
 
@@ -43,19 +76,28 @@ common:ci --noshow_progress
 common:ci --verbose_failures
 
 ## ~ common configuration for sanitizers
-common:san --config=dbg --strip=never --copt=-O0 --copt=-fno-omit-frame-pointer
+common:san --config=dbg
+common:san --strip=never
+common:san --copt=-O0
+common:san --copt=-fno-omit-frame-pointer
 
 ## ~ `--config=asan` enables Address Sanitizer (ASan)
-common:asan --config=san --//bazel/flags:asan=True
+common:asan --config=san
+common:asan --//bazel/flags:asan=True
 
 ## ~ `--config=msan` enables Memory Sanitizer (MSan)
-common:msan --config=san --//bazel/flags:msan=True
+common:msan --config=san
+common:msan --config=libcxx
+common:msan --//bazel/flags:msan=True
 
 ## ~ `--config=ubsan` enables Undefined Behaviour Sanitizer (UBSan)
-common:ubsan --config=san --linkopt=-lubsan --//bazel/flags:ubsan=True
+common:ubsan --config=san
+common:ubsan --linkopt=-lubsan
+common:ubsan --//bazel/flags:ubsan=True
 
 ## ~ `--config=tsan` enables Thread Sanitizer (TSan)
-common:tsan --config=san --//bazel/flags:tsan=True
+common:tsan --config=san
+common:tsan --//bazel/flags:tsan=True
 
 # Import .usr.bazelrc if it exists
 try-import %workspace%/.usr.bazelrc

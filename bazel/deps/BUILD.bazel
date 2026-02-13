@@ -18,13 +18,3 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-FILES = glob(["*.h"])
-
-exports_files(FILES)
-
-filegroup(
-    name = "srcs",
-    srcs = FILES,
-    visibility = ["//:__subpackages__"],
-)
