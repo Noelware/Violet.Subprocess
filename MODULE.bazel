@@ -36,7 +36,7 @@ bazel_dep(name = "violet", version = "25.12")
 git_override(
     module_name = "violet",
     remote = "https://github.com/Noelware/violet.git",
-    commit = "5bba2e895e8e31e642c88fed0a4e4ef006c4e4c6",
+    commit = "bff4d1202f0bed34f621cef0de9738f1952200d2",
     patch_strip = 1,
     patches = [
         "patches/001_violet__remove_hcc.patch",
