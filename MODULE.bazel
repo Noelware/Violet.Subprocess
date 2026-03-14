@@ -46,7 +46,7 @@ git_override(
 ## :- START ~ DEVELOPMENT DEPENDENCIES -: ##
 
 # Used for various scripts in `hack/`
-bazel_dep(name = "rules_python", version = "1.7.0")
+bazel_dep(name = "rules_python", version = "1.9.0")
 
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor
