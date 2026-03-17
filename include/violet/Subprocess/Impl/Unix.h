@@ -18,3 +18,35 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
+#pragma once
+
+#include <violet/Subprocess.h>
+
+namespace violet::subprocess {
+
+/// Implementation for [`Command`] and its state for Unix-like systems.
+struct Command::Impl final {
+    VIOLET_DISALLOW_CONSTRUCTOR(Impl);
+
+private:
+    friend struct Command;
+
+    VIOLET_IMPLICIT Impl(Str program) noexcept;
+    VIOLET_IMPLICIT Impl(Str program, const Vec<String>& args) noexcept;
+    VIOLET_IMPLICIT Impl(Str program, std::initializer_list<String> args) noexcept;
+
+    String n_program;
+    Vec<String> n_args;
+    UnorderedMap<String, String> n_environ;
+    Optional<filesystem::Path> n_wd;
+    Stdio n_stdin = Stdio::Inherit();
+    Stdio n_stdout = Stdio::Inherit();
+    Stdio n_stderr = Stdio::Inherit();
+    Optional<uid_t> n_uid;
+    Optional<gid_t> n_gid;
+    Vec<gid_t> n_extraGroupIDs;
+    Optional<PreExecFun> n_exec;
+};
+
+} // namespace violet::subprocess

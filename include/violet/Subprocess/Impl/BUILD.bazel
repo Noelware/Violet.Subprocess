@@ -19,14 +19,4 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-bazel_dep(name = "googletest", version = "1.17.0.bcr.2")
-bazel_dep(name = "liburing", version = "2.14")
-bazel_dep(name = "violet", version = "26.04.03")
-archive_override(
-    module_name = "violet",
-    integrity = "sha256-zp852KQyziNMKBm1Xoha5p8h1aKHTgR9D/122d1zojc=",
-    urls = [
-        # "https://artifacts.noelware.org/bazel-registry/violet/26.04.03/bazeldist.tgz",
-        "https://github.com/Noelware/violet/releases/download/26.04.03/bazeldist.tgz",
-    ],
-)
+exports_files(glob(["*.h"]))

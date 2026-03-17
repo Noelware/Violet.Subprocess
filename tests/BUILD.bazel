@@ -44,15 +44,37 @@ cc_test(
 )
 
 cc_test(
-    name = "pipe_reader_windows",
-    srcs = ["PipeReader.windows.test.cc"],
-    target_compatible_with = [
-        "@platforms//os:windows",
+    name = "subprocess",
+    srcs = ["Subprocess.test.cc"],
+    data = [
+        "//tests/runfiles:print_args",
+        "//tests/runfiles:print_env",
     ],
     with_gtest_main = False,
     deps = [
-        "//src/pipe_reader",
-        "//src/pipe_reader:platform_dependent",
+        "//src:subprocess",
+        "@violet//violet/filesystem:file",
+        "@violet//violet/filesystem:temporary",
+        "@violet//violet/testing:runfiles",
+        "@violet//violet/testing:runfiles_main",
+    ],
+)
+
+cc_test(
+    name = "subprocess_unix",
+    srcs = ["Subprocess.unix.test.cc"],
+    data = [
+        "//tests/runfiles:print_args",
+        "//tests/runfiles:print_env",
+    ],
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "@platforms//os:macos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    with_gtest_main = False,
+    deps = [
+        "//src:subprocess",
         "@violet//violet/testing:runfiles",
         "@violet//violet/testing:runfiles_main",
     ],

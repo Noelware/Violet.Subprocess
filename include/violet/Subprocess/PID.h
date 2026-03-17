@@ -116,3 +116,5 @@ private:
 };
 
 } // namespace violet::subprocess
+
+VIOLET_FORMATTER(violet::subprocess::PID);
