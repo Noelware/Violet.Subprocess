@@ -20,4 +20,13 @@
 # SOFTWARE.
 
 bazel_dep(name = "googletest", version = "1.17.0.bcr.2")
-bazel_dep(name = "violet", version = "26.03.04")
+bazel_dep(name = "liburing", version = "2.14")
+bazel_dep(name = "violet", version = "26.04.02")
+archive_override(
+    module_name = "violet",
+    integrity = "sha256-STTXuB9S404JUufhC9g/hFPvPsmHLud7bZN4hyJzyAY=",
+    urls = [
+        # "https://artifacts.noelware.org/bazel-registry/violet/26.04.02/bazeldist.tgz",
+        "https://github.com/Noelware/violet/releases/download/26.04.02/bazeldist.tgz",
+    ],
+)

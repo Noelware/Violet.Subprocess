@@ -19,20 +19,41 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-bazel_dep(name = "rules_rust", version = "0.69.0", dev_dependency = True)
-single_version_override(
-    module_name = "rules_rust",
-    patch_strip = 1,
-    patches = [
-        "patches/rules_rust/0001-Remove-lresolv-in-darwin-and-macos-triple-mappings.patch",
+load("//bazel:cc.bzl", "cc_test")
+
+cc_test(
+    name = "pipe_reader_unix",
+    srcs = ["PipeReader.unix.test.cc"],
+    data = [
+        "//tests/runfiles:print_args",
+        "//tests/runfiles:print_env",
     ],
-    version = "0.69.0",
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "@platforms//os:macos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    with_gtest_main = False,
+    deps = [
+        "//src:pid",
+        "//src/pipe_reader",
+        "//src/pipe_reader:platform_dependent",
+        "@violet//violet/testing:runfiles",
+        "@violet//violet/testing:runfiles_main",
+    ],
 )
 
-bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
-bazel_dep(name = "minato", dev_dependency = True)
-git_override(
-    module_name = "minato",
-    commit = "c4663b3835a4392966343fbd19011e3b0e0d9899",
-    remote = "https://github.com/auguwu/minato.git",
+cc_test(
+    name = "pipe_reader_windows",
+    srcs = ["PipeReader.windows.test.cc"],
+    target_compatible_with = [
+        "@platforms//os:windows",
+    ],
+    with_gtest_main = False,
+    deps = [
+        "//src/pipe_reader",
+        "//src/pipe_reader:platform_dependent",
+        "@violet//violet/testing:runfiles",
+        "@violet//violet/testing:runfiles_main",
+    ],
 )

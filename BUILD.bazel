@@ -19,20 +19,28 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
+load("@minato//:rcc.bzl", "minato")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//bazel:flags.bzl", "BOOL_FLAGS", "STRING_FLAGS")
 
-refresh_compile_commands(
+minato(
     name = "rcc",
 )
 
-# Alias `--@violet.subprocess//:[a|s|t|ub]san` -> `--@violet.subprocess//bazel/flags:[a|s|t|ub]san`
+cc_library(
+    name = "include_hack",
+    includes = ["include"],
+    visibility = [":__subpackages__"],
+)
+
 [alias(
-    name = "%ssan" % san,
-    actual = "//bazel/flags:%ssan" % san,
+    name = flag,
+    actual = "//bazel/flags:%s" % flag,
     visibility = ["//visibility:public"],
-) for san in [
-    "a",
-    "m",
-    "t",
-    "ub",
-]]
+) for flag in BOOL_FLAGS]
+
+[alias(
+    name = flag,
+    actual = "//bazel/flags:%s" % flag,
+    visibility = ["//visibility:public"],
+) for flag in STRING_FLAGS.keys()]

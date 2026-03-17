@@ -19,33 +19,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
+load("//bazel:flags.bzl", "BOOL_FLAGS", "STRING_FLAGS")
 
-filegroup(
-    name = "files",
-    srcs = [
-        "BUILD.bazel",
-    ],
-    visibility = ["//:__subpackages__"],
-)
-
-[bool_flag(
-    name = san,
-    build_setting_default = False,
+[string_flag(
+    name = name,
+    build_setting_default = values[0],
+    values = values,
     visibility = ["//visibility:public"],
-) for san in [
-    "asan",
-    "msan",
-    "tsan",
-    "ubsan",
-]]
+) for (name, values) in STRING_FLAGS.items()]
 
 [config_setting(
-    name = "%s_enabled" % san,
-    flag_values = {"//bazel/flags:%s" % san: "True"},
-) for san in [
-    "asan",
-    "msan",
-    "tsan",
-    "ubsan",
-]]
+    name = "%s_%s" % (name, flag),
+    flag_values = {
+        ("//bazel/flags:%s" % name): flag,
+    },
+) for name in STRING_FLAGS.keys() for values in STRING_FLAGS.values() for flag in values]
+
+[bool_flag(
+    name = name,
+    build_setting_default = False,
+    visibility = ["//visibility:public"],
+) for name in BOOL_FLAGS]
+
+[config_setting(
+    name = "%s_enabled" % name,
+    flag_values = {
+        ("//bazel/flags:%s" % name): "True",
+    },
+) for name in BOOL_FLAGS]

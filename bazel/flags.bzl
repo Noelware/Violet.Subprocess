@@ -19,20 +19,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-bazel_dep(name = "rules_rust", version = "0.69.0", dev_dependency = True)
-single_version_override(
-    module_name = "rules_rust",
-    patch_strip = 1,
-    patches = [
-        "patches/rules_rust/0001-Remove-lresolv-in-darwin-and-macos-triple-mappings.patch",
-    ],
-    version = "0.69.0",
-)
+BOOL_FLAGS = [
+    "ubsan",
+    "tsan",
+    "msan",
+    "asan",
+]
 
-bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
-bazel_dep(name = "minato", dev_dependency = True)
-git_override(
-    module_name = "minato",
-    commit = "c4663b3835a4392966343fbd19011e3b0e0d9899",
-    remote = "https://github.com/auguwu/minato.git",
-)
+STRING_FLAGS = {
+    # ### `@violet.subprocess//bazel/flags:pipe_reader_impl` (default: `platform-dependent`)
+    # This will select what PipeReader to use for non blocking reads for stdout and stderr when
+    # captured.
+    #
+    # This can be set to `"none"` to build an independent version of a pipe reader in case
+    # you really need it.
+    #
+    # #### Values
+    # - `platform-dependent`: Selects a PipeReader that corresponds to the current platform
+    #   - macOS: `kqueue`
+    #   - Linux: `epoll`
+    #   - Windows: `windows`
+    "pipe_reader_impl": ["platform-dependent", "kqueue", "epoll", "iouring", "windows", "none"],
+}

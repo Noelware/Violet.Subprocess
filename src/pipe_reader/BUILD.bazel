@@ -1,0 +1,111 @@
+# 🌺💜 Violet.Subprocess: C++20 library for subprocesses in a cross-platform, secure way
+# Copyright (c) 2025-2026 Noelware, LLC. <team@noelware.org>, et al.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("//bazel:cc.bzl", "cc_library")
+
+selects.config_setting_group(
+    name = "linux_platform_default",
+    match_all = [
+        "@platforms//os:linux",
+        "//bazel/flags:pipe_reader_impl_platform-dependent",
+    ],
+    visibility = [":__pkg__"],
+)
+
+selects.config_setting_group(
+    name = "linux_iouring",
+    match_all = [
+        "@platforms//os:linux",
+        "//bazel/flags:pipe_reader_impl_iouring",
+    ],
+    visibility = [":__pkg__"],
+)
+
+cc_library(
+    name = "pipe_reader",
+    hdrs = ["//include/violet/Subprocess:PipeReader.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@violet//violet",
+        "@violet//violet/io:descriptor",
+        "@violet//violet/io:error",
+    ],
+)
+
+cc_library(
+    name = "platform_dependent",
+    visibility = ["//visibility:public"],
+    deps = select({
+        "//bazel/flags:pipe_reader_impl_epoll": [":epoll"],
+        "//bazel/flags:pipe_reader_impl_kqueue": [":kqueue"],
+        "//bazel/flags:pipe_reader_impl_none": [],
+        "//bazel/flags:pipe_reader_impl_windows": [":windows"],
+        ":linux_iouring": [":iouring"],
+        ":linux_platform_default": [":epoll"],
+        "@platforms//os:macos": [":kqueue"],
+        "@platforms//os:windows": [":windows"],
+        "//conditions:default": [],
+    }),
+)
+
+cc_library(
+    name = "epoll",
+    srcs = ["epoll.cc"],
+    target_compatible_with = [
+        "@platforms//os:linux",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [":pipe_reader"],
+)
+
+cc_library(
+    name = "iouring",
+    srcs = ["iouring.cc"],
+    target_compatible_with = [
+        "@platforms//os:linux",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":pipe_reader",
+        "@liburing",
+    ],
+)
+
+cc_library(
+    name = "kqueue",
+    srcs = ["kqueue.cc"],
+    target_compatible_with = [
+        "@platforms//os:macos",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [":pipe_reader"],
+)
+
+cc_library(
+    name = "windows",
+    srcs = ["windows.cc"],
+    target_compatible_with = [
+        "@platforms//os:windows",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [":pipe_reader"],
+)

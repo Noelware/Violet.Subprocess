@@ -19,5 +19,28 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-CompileFlags:
-  Add: [-std=c++26]
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+cc_binary(
+    name = "print_args",
+    srcs = select({
+        "@platforms//os:linux": ["unix/print_args.c"],
+        "@platforms//os:macos": ["unix/print_args.c"],
+        "@platforms//os:windows": ["windows/print_args.c"],
+        "//conditions:default": [],
+    }),
+    conlyopts = ["-std=c23"],
+    visibility = ["//tests:__subpackages__"],
+)
+
+cc_binary(
+    name = "print_env",
+    srcs = select({
+        "@platforms//os:linux": ["unix/print_env.c"],
+        "@platforms//os:macos": ["unix/print_env.c"],
+        "@platforms//os:windows": ["windows/print_env.c"],
+        "//conditions:default": [],
+    }),
+    conlyopts = ["-std=c23"],
+    visibility = ["//tests:__subpackages__"],
+)
