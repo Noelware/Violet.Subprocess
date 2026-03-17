@@ -19,43 +19,31 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load("@minato//:rcc.bzl", "minato")
-load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//bazel:flags.bzl", "BOOL_FLAGS", "STRING_FLAGS")
+name: Release
+on:
+    release:
+        types:
+          - published
+jobs:
+    bazeldist:
+        name: "Bazel / Distribution"
+        runs-on: ubuntu-latest
+        container:
+            # TODO(@auguwu/Noel): switch to `cr.noelware.cloud/private/ci/base` once available
+            image: ghcr.io/noelware/violet/ci:clang-21
+        steps:
+            - uses: actions/checkout@v6
+            - run: ./tools/bazeldist
+            - id: integrity
+              run: |
+                integrity=$(openssl dgst -sha256 -binary "$GITHUB_WORKSPACE/bazeldist.tgz" | openssl base64 -A | sed 's/^/sha256-/')
+                echo "integrity=$integrity" >> $GITHUB_OUTPUT
 
-minato(
-    name = "rcc",
-)
+            - uses: softprops/action-gh-release@v2
+              with:
+                files: ${{github.workspace}}/bazeldist.tgz
 
-cc_library(
-    name = "include_hack",
-    includes = ["include"],
-    visibility = [":__subpackages__"],
-)
-
-[alias(
-    name = flag,
-    actual = "//bazel/flags:%s" % flag,
-    visibility = ["//visibility:public"],
-) for flag in BOOL_FLAGS]
-
-[alias(
-    name = flag,
-    actual = "//bazel/flags:%s" % flag,
-    visibility = ["//visibility:public"],
-) for flag in STRING_FLAGS.keys()]
-
-cc_library(
-    name = "subprocess",
-    srcs = ["dummy.cc"],
-    linkstatic = 0,
-    visibility = ["//visibility:public"],
-    deps = [
-        "//src:exit_status",
-        "//src:pid",
-        "//src:stdio",
-        "//src:subprocess",
-        "//src/pipe_reader",
-        "//src/pipe_reader:platform_dependent",
-    ],
-)
+            - run: python3 ./tools/hotpatch-release.py
+              env:
+                BAZELDIST_INTEGRITY: ${{steps.integrity.outputs.integrity}}
+                GITHUB_TOKEN: ${{github.token}}
