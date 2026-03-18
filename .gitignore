@@ -190,7 +190,13 @@ build.ninja
 .ninja_logs
 
 **/.usr.bazelrc
-.cache/
 .direnv/
+.cache/
 build/
-.dist/
+
+.bazeldist/
+.cmakedist/
+.mesondist/
+bazeldist.tgz
+cmakedist.tgz
+mesondist.tgz
