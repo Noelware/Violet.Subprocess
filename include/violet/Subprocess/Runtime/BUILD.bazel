@@ -19,44 +19,4 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load("@minato//:rcc.bzl", "minato")
-load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//bazel:flags.bzl", "BOOL_FLAGS", "STRING_FLAGS")
-
-minato(
-    name = "rcc",
-)
-
-cc_library(
-    name = "include_hack",
-    includes = ["include"],
-    visibility = [":__subpackages__"],
-)
-
-[alias(
-    name = flag,
-    actual = "//bazel/flags:%s" % flag,
-    visibility = ["//visibility:public"],
-) for flag in BOOL_FLAGS]
-
-[alias(
-    name = flag,
-    actual = "//bazel/flags:%s" % flag,
-    visibility = ["//visibility:public"],
-) for flag in STRING_FLAGS.keys()]
-
-cc_library(
-    name = "subprocess",
-    srcs = ["dummy.cc"],
-    linkstatic = 0,
-    visibility = ["//visibility:public"],
-    deps = [
-        "//src:exit_status",
-        "//src:pid",
-        "//src:runtime_info",
-        "//src:stdio",
-        "//src:subprocess",
-        "//src/pipe_reader",
-        "//src/pipe_reader:platform_dependent",
-    ],
-)
+exports_files(glob(["*.h"]))

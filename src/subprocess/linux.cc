@@ -307,6 +307,10 @@ auto Command::doSpawn() const noexcept -> io::Result<Child>
 
 auto Child::Wait() const noexcept -> io::Result<ExitStatus>
 {
+    if (!this->PID) {
+        return Err(VIOLET_IO_ERROR(InvalidData, String, "child is not running"));
+    }
+
     Int32 status = -1;
     struct PID waited = -1;
     do {

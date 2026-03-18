@@ -28,6 +28,12 @@
 #include <violet/Subprocess/Stdio.h>
 #include <violet/Violet.h>
 
+#ifdef VIOLET_UNIX
+#include <csignal>
+#elif defined(VIOLET_WINDOWS)
+#include <windows.h>
+#endif
+
 namespace violet::subprocess {
 
 /// Represents a running or exited child process spawned by [`Command::Spawn()`].
@@ -94,6 +100,12 @@ struct Child final {
     /// Returns a human-readable string representation of this `Child`, suitable
     /// for logging and debugging.
     auto ToString() const noexcept -> String;
+
+#ifdef VIOLET_UNIX
+    /// Terminates the child process with a specific signal or `SIGKILL`.
+    /// @param signal the signal to send to the child
+    [[nodiscard]] auto Kill(Int32 signal = SIGKILL) const noexcept -> io::Result<void>;
+#endif
 
     /// Writes the string representation of this `Child` to an output stream.
     friend auto operator<<(std::ostream& os, const Child& self) noexcept -> std::ostream&

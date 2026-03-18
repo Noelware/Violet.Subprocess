@@ -22,6 +22,15 @@
 load("//bazel:cc.bzl", "cc_library")
 
 cc_library(
+    name = "runtime_info",
+    hdrs = ["//include/violet/Subprocess/Runtime:Info.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//violet/experimental:smol_string",
+    ],
+)
+
+cc_library(
     name = "exit_status",
     srcs = select({
         "@platforms//os:linux": ["exit_status/unix.cc"],

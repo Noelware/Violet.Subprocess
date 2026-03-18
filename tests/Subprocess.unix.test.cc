@@ -90,3 +90,45 @@ TEST(UnixExt, WithGIDCurrentGroupSucceeds)
     ASSERT_TRUE(result) << "status failed: " << result.Error();
     EXPECT_EQ(result->Code(), 0);
 }
+
+TEST(ChildKill, DefaultSignalKillsProcess)
+{
+    // Spawn a process that sleeps indefinitely, kill it with SIGKILL (default),
+    // and verify it was terminated by a signal.
+    auto child = Command("sleep").WithArg("60").Spawn();
+    ASSERT_TRUE(child) << "spawn failed: " << child.Error();
+
+    auto killResult = child->Kill();
+    ASSERT_TRUE(killResult) << "Kill() failed: " << killResult.Error();
+
+    auto status = child->Wait();
+    ASSERT_TRUE(status) << "Wait() failed: " << status.Error();
+    EXPECT_TRUE(status->Signaled());
+    EXPECT_EQ(status->Signal(), SIGKILL);
+}
+
+TEST(ChildKill, ExplicitSIGTERMTerminatesProcess)
+{
+    // Spawn a process that sleeps indefinitely, send SIGTERM explicitly,
+    // and verify it was terminated by that signal.
+    auto child = Command("sleep").WithArg("60").Spawn();
+    ASSERT_TRUE(child) << "spawn failed: " << child.Error();
+
+    auto killResult = child->Kill(SIGTERM);
+    ASSERT_TRUE(killResult) << "Kill(SIGTERM) failed: " << killResult.Error();
+
+    auto status = child->Wait();
+    ASSERT_TRUE(status) << "Wait() failed: " << status.Error();
+    EXPECT_TRUE(status->Signaled());
+    EXPECT_EQ(status->Signal(), SIGTERM);
+}
+
+TEST(ChildKill, InvalidPIDReturnsError)
+{
+    // Construct a Child with a PID that is guaranteed not to exist,
+    // and verify that Kill() returns an error rather than succeeding.
+    Child orphan(-1);
+
+    auto result = orphan.Kill();
+    EXPECT_FALSE(result) << "Kill() on an invalid PID should return an error";
+}

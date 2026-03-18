@@ -46,7 +46,7 @@ auto PID::ToString() const noexcept -> String
 
 PID::operator bool() const noexcept
 {
-    return this->n_value != 0;
+    return this->n_value > 0;
 }
 
 PID::operator value_type() const noexcept

@@ -29,6 +29,7 @@
 using violet::Array;
 using violet::UInt8;
 using violet::Vec;
+using violet::subprocess::Child;
 using violet::subprocess::Command;
 using violet::subprocess::Stdio;
 
@@ -160,6 +161,19 @@ auto Command::WithWorkingDirectory(filesystem::PathRef path) noexcept -> Command
 {
     this->n_impl->n_wd = filesystem::Path(path.ToString());
     return *this;
+}
+
+auto Child::Kill(Int32 signal) const noexcept -> io::Result<void>
+{
+    if (!this->PID) {
+        return Err(VIOLET_IO_ERROR(InvalidData, String, "child is not running"));
+    }
+
+    if (::kill(this->PID.Get(), signal) < 0) {
+        return Err(io::Error::OSError());
+    }
+
+    return {};
 }
 
 #endif
