@@ -216,6 +216,7 @@ using PreExecFun = std::function<void()>;
 /// ```
 struct Command final {
     VIOLET_DISALLOW_CONSTRUCTOR(Command);
+    ~Command();
 
     /// Constructs a `Command` that will run `program` with no arguments.
     ///

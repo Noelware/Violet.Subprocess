@@ -64,6 +64,14 @@ Command::Command(Str program, const Vec<String>& args) noexcept
 {
 }
 
+Command::~Command()
+{
+    if (this->n_impl != nullptr) {
+        delete this->n_impl;
+        this->n_impl = nullptr;
+    }
+}
+
 auto Command::WithArg(Str arg) noexcept -> Command&
 {
     this->n_impl->n_args.emplace_back(arg);
