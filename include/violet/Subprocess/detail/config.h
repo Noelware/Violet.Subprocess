@@ -19,69 +19,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <violet/Violet.h>
+#pragma once
 
-#if VIOLET_PLATFORM(UNIX)
+#if !defined(VIOLET_SUBPROCESS_HAS_ATTRIBUTE) && defined(__has_attribute)
+#define VIOLET_SUBPROCESS_HAS_ATTRIBUTE(x) __has_attribute(x)
+#else
+#define VIOLET_SUBPROCESS_HAS_ATTRIBUTE(x) 0
+#endif
 
-#include <violet/Subprocess/PID.h>
+/**
+ * @macro VIOLET_SUBPROCESS_API
+ */
 
-#include <unistd.h>
+/**
+ * @macro VIOLET_SUBPROCESS_LOCAL
+ */
 
-using violet::subprocess::PID;
-
-auto PID::Current() noexcept -> PID
-{
-    return getpid();
-}
-
-auto PID::Parent() noexcept -> Optional<PID>
-{
-    return getppid();
-}
-
-auto PID::ToString() const noexcept -> String
-{
-    return std::format("PID({})", this->n_value);
-}
-
-PID::operator bool() const noexcept
-{
-    return this->n_value > 0;
-}
-
-PID::operator value_type() const noexcept
-{
-    return this->Get();
-}
-
-auto PID::operator<=>(const PID& other) const noexcept -> std::strong_ordering
-{
-    return this->n_value <=> other.n_value;
-}
-
-auto PID::operator<=>(value_type other) const noexcept -> std::strong_ordering
-{
-    return this->n_value <=> other;
-}
-
-auto PID::operator==(const PID& other) const noexcept -> bool
-{
-    return this->n_value == other.n_value;
-}
-
-auto PID::operator!=(const PID& other) const noexcept -> bool
-{
-    return !(*this == other);
-}
-
-auto PID::operator==(value_type other) const noexcept -> bool
-{
-    return this->n_value == other;
-}
-
-auto PID::operator!=(value_type other) const noexcept -> bool
-{
-    return !(*this == other);
-}
-
+#ifdef VIOLET_SUBPROCESS_BUILDING
+#define VIOLET_SUBPROCESS_API
+#define VIOLET_SUBPROCESS_LOCAL
+#elif defined(_WIN32)
+#ifdef VIOLET_SUBPROCESS_BUILD_SHARED
+#define VIOLET_SUBPROCESS_API __declspec(dllexport)
+#define VIOLET_SUBPROCESS_LOCAL
+#elif defined(VIOLET_SUBPROCESS_USING_SHARED)
+#define VIOLET_SUBPROCESS_API __declspec(dllimport)
+#define VIOLET_SUBPROCESS_LOCAL
+#else
+#define VIOLET_SUBPROCESS_API __declspec(dllexport)
+#define VIOLET_SUBPROCESS_LOCAL
+#endif
+#elif defined(VIOLET_SUBPROCESS_BUILD_SHARED)
+#if VIOLET_SUBPROCESS_HAS_ATTRIBUTE(visibility)
+#define VIOLET_SUBPROCESS_API __attribute__((visibility("default")))
+#define VIOLET_SUBPROCESS_LOCAL __attribute__((visibility("hidden")))
+#else
+#define VIOLET_SUBPROCESS_API
+#define VIOLET_SUBPROCESS_LOCAL
+#endif
+#else
+#define VIOLET_SUBPROCESS_API
+#define VIOLET_SUBPROCESS_LOCAL
 #endif

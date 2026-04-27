@@ -19,9 +19,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load("//bazel:cc.bzl", "cc_library")
+load("//bazel:cc.bzl", "violet_cc_library")
 
-cc_library(
+violet_cc_library(
     name = "runtime_info",
     hdrs = ["//include/violet/Subprocess/Runtime:Info.h"],
     visibility = ["//visibility:public"],
@@ -30,7 +30,7 @@ cc_library(
     ],
 )
 
-cc_library(
+violet_cc_library(
     name = "exit_status",
     srcs = select({
         "@platforms//os:linux": ["exit_status/unix.cc"],
@@ -46,7 +46,7 @@ cc_library(
     ],
 )
 
-cc_library(
+violet_cc_library(
     name = "pid",
     srcs = select({
         "@platforms//os:linux": ["pid/unix.cc"],
@@ -62,7 +62,7 @@ cc_library(
     ],
 )
 
-cc_library(
+violet_cc_library(
     name = "stdio",
     hdrs = ["//include/violet/Subprocess:Stdio.h"],
     visibility = ["//visibility:public"],
@@ -74,7 +74,7 @@ cc_library(
     ],
 )
 
-cc_library(
+violet_cc_library(
     name = "subprocess",
     srcs = select({
         "@platforms//os:linux": [

@@ -4,5 +4,7 @@
 .github/
 .vscode/
 build/
+builddir/
+.bazeldist/
 
 compile_commands.json

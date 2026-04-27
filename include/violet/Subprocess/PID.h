@@ -21,10 +21,12 @@
 
 #pragma once
 
+#include "detail/config.h"
+
 #include <violet/Container/Optional.h>
 #include <violet/Violet.h>
 
-#ifdef VIOLET_WINDOWS
+#if VIOLET_PLATFORM(WINDOWS)
 #include <windows.h>
 #endif
 
@@ -48,10 +50,10 @@ namespace violet::subprocess {
 ///     std::cout << "Parent PID: " << *parent << '\n';
 /// }
 /// ```
-struct PID final {
-#ifdef VIOLET_UNIX
+struct VIOLET_SUBPROCESS_API PID final {
+#if VIOLET_PLATFORM(UNIX)
     using value_type = pid_t;
-#elif defined(VIOLET_WINDOWS)
+#elif VIOLET_PLATFORM(WINDOWS)
     using value_type = HANDLE;
 #endif
 

@@ -19,69 +19,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <violet/Violet.h>
+#include <csignal>
+#include <string>
+#include <thread>
 
-#if VIOLET_PLATFORM(UNIX)
+using namespace std::chrono_literals;
 
-#include <violet/Subprocess/PID.h>
-
-#include <unistd.h>
-
-using violet::subprocess::PID;
-
-auto PID::Current() noexcept -> PID
+auto main(int argc, char* argv[]) -> int
 {
-    return getpid();
-}
+    bool ignoreSIGTerm = true;
+    std::chrono::milliseconds exitAfter = std::chrono::milliseconds(0);
 
-auto PID::Parent() noexcept -> Optional<PID>
-{
-    return getppid();
-}
+    for (int i = 1; i < argc; ++i) {
+        const std::string arg(argv[i]);
+        if (arg == "--respect-sigterm") {
+            ignoreSIGTerm = false;
+        } else if (arg.starts_with("--exit-after=")) {
+            exitAfter = std::chrono::milliseconds(::atoi(arg.substr(13).c_str()));
+        }
+    }
 
-auto PID::ToString() const noexcept -> String
-{
-    return std::format("PID({})", this->n_value);
-}
+    if (ignoreSIGTerm) {
+        ::signal(SIGTERM, SIG_IGN);
+    }
 
-PID::operator bool() const noexcept
-{
-    return this->n_value > 0;
-}
+    if (exitAfter.count() > 0) {
+        std::this_thread::sleep_for(exitAfter);
+        return 0;
+    }
 
-PID::operator value_type() const noexcept
-{
-    return this->Get();
+    std::this_thread::sleep_for(std::chrono::hours(24));
+    return 0;
 }
-
-auto PID::operator<=>(const PID& other) const noexcept -> std::strong_ordering
-{
-    return this->n_value <=> other.n_value;
-}
-
-auto PID::operator<=>(value_type other) const noexcept -> std::strong_ordering
-{
-    return this->n_value <=> other;
-}
-
-auto PID::operator==(const PID& other) const noexcept -> bool
-{
-    return this->n_value == other.n_value;
-}
-
-auto PID::operator!=(const PID& other) const noexcept -> bool
-{
-    return !(*this == other);
-}
-
-auto PID::operator==(value_type other) const noexcept -> bool
-{
-    return this->n_value == other;
-}
-
-auto PID::operator!=(value_type other) const noexcept -> bool
-{
-    return !(*this == other);
-}
-
-#endif

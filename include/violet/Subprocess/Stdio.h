@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include "detail/config.h"
+
 #include <violet/Container/Optional.h>
 #include <violet/Filesystem/Path.h>
 #include <violet/Violet.h>
@@ -55,7 +57,7 @@ namespace violet::subprocess {
 ///     .WithStdout(Stdio::Null())
 ///     .WithStderr(Stdio::Inherit());
 /// ```
-struct Stdio final {
+struct VIOLET_SUBPROCESS_API Stdio final {
     VIOLET_DISALLOW_CONSTEXPR_CONSTRUCTOR(Stdio);
 
     /// Creates a `Stdio` value that redirects the stream to `/dev/null`.
@@ -104,27 +106,27 @@ struct Stdio final {
     }
 
     /// Returns `true` if this `Stdio` is configured as [`Null()`].
-    constexpr auto IsNull() const noexcept -> bool
+    [[nodiscard]] constexpr auto IsNull() const noexcept -> bool
     {
         return this->n_kind == kind_t::kNull;
     }
 
     /// Returns `true` if this `Stdio` is configured as [`Inherit()`].
-    constexpr auto Inherited() const noexcept -> bool
+    [[nodiscard]] constexpr auto Inherited() const noexcept -> bool
     {
         return this->n_kind == kind_t::kInherit;
     }
 
     /// Returns `true` if this `Stdio` is configured as [`Pipe()`] (with or
     /// without a target file path).
-    constexpr auto Piped() const noexcept -> bool
+    [[nodiscard]] constexpr auto Piped() const noexcept -> bool
     {
         return this->n_kind == kind_t::kPipe;
     }
 
     /// Returns `true` if this `Stdio` is a pipe that redirects output into a
     /// specific file (i.e. constructed with [`Pipe(Path&&)`]).
-    constexpr auto PipedIntoFile() const noexcept -> bool
+    [[nodiscard]] constexpr auto PipedIntoFile() const noexcept -> bool
     {
         return this->Piped() && this->n_pipeInto.HasValue();
     }
@@ -167,7 +169,7 @@ private:
 ///
 /// Dropping (or not using) this handle will eventually cause the child to
 /// observe EOF on its stdin.
-struct ChildStdin final {
+struct VIOLET_SUBPROCESS_API ChildStdin final {
     /// The underlying file descriptor for the write end of the pipe.
     io::FileDescriptor Descriptor;
 
@@ -202,7 +204,7 @@ static_assert(io::Writable<ChildStdin>, "`ChildStdin` doesn't conform to the `io
 /// [`Stdio::Pipe()`]. It wraps the read end of the OS pipe and satisfies the
 /// [`io::Readable`] concept, so data produced by the child can be consumed
 /// by the parent through this handle.
-struct ChildStdout final {
+struct VIOLET_SUBPROCESS_API ChildStdout final {
     /// The underlying file descriptor for the read end of the pipe.
     io::FileDescriptor Descriptor;
 
@@ -229,7 +231,7 @@ static_assert(io::Readable<ChildStdout>, "`ChildStdout` doesn't conform to the `
 /// [`Stdio::Pipe()`]. It wraps the read end of the OS pipe and satisfies the
 /// [`io::Readable`] concept, allowing the parent to capture diagnostic output
 /// from the child.
-struct ChildStderr final {
+struct VIOLET_SUBPROCESS_API ChildStderr final {
     /// The underlying file descriptor for the read end of the pipe.
     io::FileDescriptor Descriptor;
 

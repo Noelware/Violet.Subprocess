@@ -21,10 +21,12 @@
 
 #pragma once
 
+#include "detail/config.h"
+
 #include <violet/Container/Optional.h>
 #include <violet/Violet.h>
 
-#ifdef VIOLET_WINDOWS
+#if VIOLET_PLATFORM(WINDOWS)
 #include <windows.h>
 #endif
 
@@ -34,13 +36,13 @@ namespace violet::subprocess {
 ///
 /// `ExitStatus` models how a subprocess finished execution in a
 /// platform-aware manner.
-struct ExitStatus final {
-#ifdef VIOLET_UNIX
+struct VIOLET_SUBPROCESS_API ExitStatus final {
+#if VIOLET_PLATFORM(UNIX)
     /// Underlying integer type used to represent exit codes and signals.
     ///
     /// On Unix this is `Int32`.
     using value_type = Int32;
-#elif defined(VIOLET_WINDOWS)
+#elif VIOLET_PLATFORM(WINDOWS)
     /// Underlying integer type used to represent exit codes.
     ///
     /// On Windows this is `DWORD`.
@@ -65,7 +67,7 @@ struct ExitStatus final {
     /// This is always `true` for a completed process.
     [[nodiscard]] auto Exited() const noexcept -> bool;
 
-#ifdef VIOLET_UNIX
+#if VIOLET_PLATFORM(UNIX)
     /// Returns `true` if the process was terminated by a signal.
     ///
     /// Corresponds to `WIFSIGNALED`.

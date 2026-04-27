@@ -21,12 +21,14 @@
 
 #pragma once
 
+#include "violet/Subprocess/detail/config.h"
+
 #include <violet/Subprocess.h>
 
 namespace violet::subprocess {
 
 /// Implementation for [`Command`] and its state for Unix-like systems.
-struct Command::Impl final {
+struct VIOLET_SUBPROCESS_API Command::Impl final {
     VIOLET_DISALLOW_CONSTRUCTOR(Impl);
 
 private:
@@ -47,6 +49,7 @@ private:
     Optional<gid_t> n_gid;
     Vec<gid_t> n_extraGroupIDs;
     Optional<PreExecFun> n_exec;
+    Optional<std::chrono::milliseconds> n_deathTimeout;
 };
 
 } // namespace violet::subprocess

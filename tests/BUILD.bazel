@@ -19,9 +19,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load("//bazel:cc.bzl", "cc_test")
+load("//bazel:cc.bzl", "violet_cc_test")
 
-cc_test(
+violet_cc_test(
     name = "pipe_reader_unix",
     srcs = ["PipeReader.unix.test.cc"],
     data = [
@@ -43,10 +43,11 @@ cc_test(
     ],
 )
 
-cc_test(
+violet_cc_test(
     name = "subprocess",
     srcs = ["Subprocess.test.cc"],
     data = [
+        "//tests/runfiles:hang",
         "//tests/runfiles:print_args",
         "//tests/runfiles:print_env",
     ],
@@ -60,7 +61,7 @@ cc_test(
     ],
 )
 
-cc_test(
+violet_cc_test(
     name = "subprocess_unix",
     srcs = ["Subprocess.unix.test.cc"],
     data = [

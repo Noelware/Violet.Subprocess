@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include "violet/Subprocess/detail/config.h"
+
 #include <violet/Experimental/SmolString.h>
 
 namespace violet::subprocess {
@@ -87,7 +89,7 @@ constexpr static const bool DEVBUILD = false;
 /// ```cpp
 /// Version() == "2026.01-dev.5"
 /// ```
-constexpr auto Version() noexcept -> experimental::SmolString<256>
+VIOLET_SUBPROCESS_API constexpr auto Version() noexcept -> experimental::SmolString<256>
 {
     using namespace std::string_view_literals;
 
@@ -98,7 +100,7 @@ constexpr auto Version() noexcept -> experimental::SmolString<256>
         smol.AppendFormatted(".{:02}", PATCH);
     }
 
-#ifdef VIOLET_DEVBUILD
+#if defined(VIOLET_SUBPROCESS_DEVBUILD) && VIOLET_SUBPROCESS_DEVBUILD
     smol.Append("-dev");
 
     if (BUILD > 0) {

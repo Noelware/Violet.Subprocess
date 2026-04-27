@@ -22,6 +22,36 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 cc_binary(
+    name = "hang",
+    srcs = select({
+        "@platforms//os:linux": ["unix/hang.cc"],
+        "@platforms//os:macos": ["unix/hang.cc"],
+        "@platforms//os:windows": ["windows/hang.cc"],
+        "//conditions:default": [],
+    }),
+    copts = select({
+        "@rules_cc//cc/compiler:clang": [
+            "-fno-exceptions",
+            "-fno-rtti",
+        ],
+        "@rules_cc//cc/compiler:clang-cl": [
+            "/EHs-c-",
+            "/GR-",
+        ],
+        "@rules_cc//cc/compiler:gcc": [
+            "-fno-exceptions",
+            "-fno-rtti",
+        ],
+        "@rules_cc//cc/compiler:msvc-cl": [
+            "/EHs-c-",
+            "/GR-",
+        ],
+        "//conditions:default": [],
+    }),
+    visibility = ["//tests:__subpackages__"],
+)
+
+cc_binary(
     name = "print_args",
     srcs = select({
         "@platforms//os:linux": ["unix/print_args.c"],

@@ -20,7 +20,7 @@
 # SOFTWARE.
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
-load("//bazel:cc.bzl", "cc_library")
+load("//bazel:cc.bzl", "violet_cc_library")
 
 selects.config_setting_group(
     name = "linux_platform_default",
@@ -40,7 +40,7 @@ selects.config_setting_group(
     visibility = [":__pkg__"],
 )
 
-cc_library(
+violet_cc_library(
     name = "pipe_reader",
     hdrs = ["//include/violet/Subprocess:PipeReader.h"],
     visibility = ["//visibility:public"],
@@ -51,7 +51,7 @@ cc_library(
     ],
 )
 
-cc_library(
+violet_cc_library(
     name = "platform_dependent",
     visibility = ["//visibility:public"],
     deps = select({
@@ -67,7 +67,7 @@ cc_library(
     }),
 )
 
-cc_library(
+violet_cc_library(
     name = "epoll",
     srcs = ["epoll.cc"],
     target_compatible_with = [
@@ -77,7 +77,7 @@ cc_library(
     deps = [":pipe_reader"],
 )
 
-cc_library(
+violet_cc_library(
     name = "iouring",
     srcs = ["iouring.cc"],
     target_compatible_with = [
@@ -90,7 +90,7 @@ cc_library(
     ],
 )
 
-cc_library(
+violet_cc_library(
     name = "kqueue",
     srcs = ["kqueue.cc"],
     target_compatible_with = [
@@ -100,7 +100,7 @@ cc_library(
     deps = [":pipe_reader"],
 )
 
-cc_library(
+violet_cc_library(
     name = "windows",
     srcs = ["windows.cc"],
     target_compatible_with = [

@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include "Subprocess/detail/config.h"
+
 #include <violet/Container/Optional.h>
 #include <violet/Filesystem/Path.h>
 #include <violet/Subprocess/ExitStatus.h>
@@ -28,9 +30,11 @@
 #include <violet/Subprocess/Stdio.h>
 #include <violet/Violet.h>
 
-#ifdef VIOLET_UNIX
+#include <chrono>
+
+#if VIOLET_PLATFORM(UNIX)
 #include <csignal>
-#elif defined(VIOLET_WINDOWS)
+#elif VIOLET_PLATFORM(WINDOWS)
 #include <windows.h>
 #endif
 
@@ -61,7 +65,7 @@ namespace violet::subprocess {
 ///     auto status = child->Wait();
 /// }
 /// ```
-struct Child final {
+struct VIOLET_SUBPROCESS_API Child final {
     /// The platform process identifier for this child.
     struct PID PID;
 
@@ -76,6 +80,9 @@ struct Child final {
     /// Read end of the pipe connected to the child's stderr, if [`Stdio::Pipe()`]
     /// was passed to [`Command::WithStderr()`]. Empty otherwise.
     Optional<ChildStderr> Stderr;
+
+    /// Death timeout of when to terminate this child process.
+    Optional<std::chrono::milliseconds> DeathTimeout;
 
     /// Constructs a `Child` from the given `pid`.
     ///
@@ -95,13 +102,13 @@ struct Child final {
     /// @returns the exit status of the child on success, or an I/O error if
     /// waiting failed (e.g., the PID is invalid or the process was already
     /// reaped).
-    auto Wait() const noexcept -> io::Result<ExitStatus>;
+    [[nodiscard]] auto Wait() const noexcept -> io::Result<ExitStatus>;
 
     /// Returns a human-readable string representation of this `Child`, suitable
     /// for logging and debugging.
-    auto ToString() const noexcept -> String;
+    [[nodiscard]] auto ToString() const noexcept -> String;
 
-#ifdef VIOLET_UNIX
+#if VIOLET_PLATFORM(UNIX)
     /// Terminates the child process with a specific signal or `SIGKILL`.
     /// @param signal the signal to send to the child
     [[nodiscard]] auto Kill(Int32 signal = SIGKILL) const noexcept -> io::Result<void>;
@@ -128,13 +135,13 @@ struct Child final {
 ///     std::cout << "captured stdout: " << captured << '\n';
 /// }
 /// ```
-struct Output final {
+struct VIOLET_SUBPROCESS_API Output final {
     ExitStatus Status; ///< the exit code of the subprocess
     Vec<UInt8> Stdout; ///< the standard output from the process
     Vec<UInt8> Stderr; ///< the standard error from the process
 };
 
-#ifdef VIOLET_UNIX
+#if VIOLET_PLATFORM(UNIX)
 /// A callback invoked in the child process after `fork()` but before `exec()`.
 ///
 /// `PreExecFun` is a Unix-only hook that runs inside the forked child between
@@ -226,7 +233,7 @@ using PreExecFun = std::function<void()>;
 ///     .WithWorkingDirectory("/home/user/myproject")
 ///     .Status();
 /// ```
-struct Command final {
+struct VIOLET_SUBPROCESS_API Command final {
     VIOLET_DISALLOW_CONSTRUCTOR(Command);
     ~Command();
 
@@ -324,7 +331,35 @@ struct Command final {
     /// @returns a reference to `*this` for method chaining.
     auto WithStderr(const Stdio& cfg) noexcept -> Command&;
 
-#ifdef VIOLET_UNIX
+    /// Sets the maximum duration to wait for the subprocess to exit after a kill signal
+    /// is sent.
+    ///
+    /// If the process has not exited within the given duration, it'll be forcefully terminated
+    /// with `SIGKILL` on Unix or `TerminateProcess` on Windows.
+    ///
+    /// ## Remarks
+    /// A zero-duration timeout will cause an immediate forceful kill with no grace period. If no death
+    /// timeout is set, the default behaviour is to wait indefinitely for the process to exit.
+    auto WithDeathTimeout(std::chrono::milliseconds ms) noexcept -> Command&;
+
+    /// Sets the maximum duration to wait for the subprocess to exit after a kill signal
+    /// is sent.
+    ///
+    /// If the process has not exited within the given duration, it'll be forcefully terminated
+    /// with `SIGKILL` on Unix or `TerminateProcess` on Windows.
+    ///
+    /// ## Remarks
+    /// A zero-duration timeout will cause an immediate forceful kill with no grace period. If no death
+    /// timeout is set, the default behaviour is to wait indefinitely for the process to exit.
+    ///
+    /// @param dur timeout duration. will be converted to millisecond precision.
+    template<typename Rep, typename Period>
+    auto WithDeathTimeout(std::chrono::duration<Rep, Period> dur) noexcept -> Command&
+    {
+        return this->WithDeathTimeout(std::chrono::duration_cast<std::chrono::milliseconds>(dur));
+    }
+
+#if VIOLET_PLATFORM(UNIX)
     /// Sets the user identity the child process will run as.
     ///
     /// Calls `setuid(2)` in the child after `fork()` and before `exec()`. The

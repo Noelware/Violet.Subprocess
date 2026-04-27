@@ -21,20 +21,26 @@
 
 #include <violet/Violet.h>
 
-#ifdef VIOLET_LINUX
+#if VIOLET_PLATFORM(LINUX)
 
 #include <violet/Subprocess.h>
 #include <violet/Subprocess/Impl/Unix.h>
 #include <violet/Subprocess/PipeReader.h>
 
+#include <thread>
+
 #include <fcntl.h>
 #include <grp.h>
 #include <sys/poll.h>
+#include <sys/syscall.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
+using namespace std::chrono_literals;
+
 using violet::subprocess::Child;
 using violet::subprocess::Command;
+using violet::subprocess::ExitStatus;
 using violet::subprocess::Output;
 using violet::subprocess::Stdio;
 
@@ -145,6 +151,39 @@ void drainPipes(Int32 stdout, Int32 stderr, Output& out)
             }
         }
     }
+}
+
+auto pollWait(Int32 pid, std::chrono::milliseconds timeout) -> violet::io::Result<ExitStatus>
+{
+    auto deadline = std::chrono::steady_clock::now() + timeout;
+    auto interval = 1ms;
+    constexpr auto kMaxInterval = 50ms;
+
+    while (std::chrono::steady_clock::now() < deadline) {
+        Int32 status = 0;
+        pid_t ret = ::waitpid(pid, &status, WNOHANG);
+
+        if (ret > 0) {
+            return ExitStatus(status);
+        }
+
+        if (ret < 0 && errno != EINTR) {
+            return Err(violet::io::Error::OSError());
+        }
+
+        auto remaining
+            = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - std::chrono::steady_clock::now());
+
+        auto toSleep = std::min(interval, remaining);
+        if (toSleep.count() <= 0) {
+            break;
+        }
+
+        std::this_thread::sleep_for(toSleep);
+        interval = std::min(interval * 2, kMaxInterval);
+    }
+
+    return Err(VIOLET_IO_ERROR(TimedOut, violet::String, "process death timed-out reached"));
 }
 
 } // namespace
@@ -302,6 +341,7 @@ auto Command::doSpawn() const noexcept -> io::Result<Child>
         child.Stderr = ChildStderr(stderrPipes[0]);
     }
 
+    child.DeathTimeout = VIOLET_MOVE(this->n_impl->n_deathTimeout);
     return child;
 }
 
@@ -311,17 +351,37 @@ auto Child::Wait() const noexcept -> io::Result<ExitStatus>
         return Err(VIOLET_IO_ERROR(InvalidData, String, "child is not running"));
     }
 
-    Int32 status = -1;
-    struct PID waited = -1;
-    do {
-        waited = ::waitpid(this->PID.Get(), &status, 0);
-    } while (waited.Get() < 0 && errno == EINTR);
+    if (!this->DeathTimeout.HasValue()) {
+        Int32 status = -1;
+        struct PID waited = -1;
+        do {
+            waited = ::waitpid(this->PID.Get(), &status, 0);
+        } while (waited.Get() < 0 && errno == EINTR);
 
-    if (waited < 0) {
-        return Err(io::Error::OSError());
+        if (waited < 0) {
+            return Err(io::Error::OSError());
+        }
+
+        return ExitStatus(status);
     }
 
-    return ExitStatus(status);
+    auto pidfd = static_cast<Int32>(::syscall(SYS_pidfd_open, this->PID.Get(), 0));
+    if (pidfd >= 0) {
+        struct pollfd pfd{};
+        pfd.fd = pidfd;
+        pfd.events = POLLIN;
+
+        Int32 ret = ::poll(&pfd, 1, static_cast<Int32>(this->DeathTimeout->count()));
+        if (ret == 0) {
+            return Err(VIOLET_IO_ERROR(TimedOut, String, "process death time-out reached"));
+        }
+
+        if (ret < 0) {
+            return Err(violet::io::Error::OSError());
+        }
+    }
+
+    return pollWait(this->PID.Get(), this->DeathTimeout.Value());
 }
 
 auto Child::ToString() const noexcept -> String

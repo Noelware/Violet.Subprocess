@@ -33,6 +33,13 @@ cc_library(
     visibility = [":__subpackages__"],
 )
 
+cc_library(
+    name = "config",
+    hdrs = ["//include/violet/Subprocess/detail:config.h"],
+    local_defines = ["VIOLET_SUBPROCESS_BUILDING"],
+    visibility = [":__subpackages__"],
+)
+
 [alias(
     name = flag,
     actual = "//bazel/flags:%s" % flag,
@@ -48,7 +55,14 @@ cc_library(
 cc_library(
     name = "subprocess",
     srcs = ["dummy.cc"],
+    copts = select({
+        "@rules_cc//cc/compiler:clang": ["-fvisibility=hidden"],
+        "@rules_cc//cc/compiler:gcc": ["-fvisibility=hidden"],
+        "//conditions:default": [],
+    }),
+    defines = ["VIOLET_SUBPROCESS_USING_SHARED"],
     linkstatic = 0,
+    local_defines = ["VIOLET_SUBPROCESS_BUILD_SHARED"],
     visibility = ["//visibility:public"],
     deps = [
         "//src:exit_status",

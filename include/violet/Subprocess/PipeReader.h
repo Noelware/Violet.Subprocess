@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include "detail/config.h"
+
 #include <violet/IO/Descriptor.h>
 #include <violet/IO/Error.h>
 #include <violet/Violet.h>
@@ -43,7 +45,7 @@ namespace violet::subprocess {
 ///     auto CaptureAll() const noexcept -> violet::io::Result<violet::Vec<violet::UInt8>> override { /*...*/ }
 /// };
 /// ```
-struct PipeReader {
+struct VIOLET_SUBPROCESS_API PipeReader {
     virtual ~PipeReader() = default;
 
     /// Associate this reader with a given pipe file descriptor.
@@ -64,6 +66,6 @@ struct PipeReader {
 };
 
 /// Returns the [`PipeReader`] implementation to use.
-auto GetPipeReader() noexcept -> UniquePtr<PipeReader>;
+VIOLET_SUBPROCESS_API auto GetPipeReader() noexcept -> UniquePtr<PipeReader>;
 
 } // namespace violet::subprocess

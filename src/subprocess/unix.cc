@@ -21,7 +21,7 @@
 
 #include <violet/Violet.h>
 
-#ifdef VIOLET_UNIX
+#if VIOLET_PLATFORM(UNIX)
 
 #include <violet/Subprocess.h>
 #include <violet/Subprocess/Impl/Unix.h>
@@ -127,6 +127,12 @@ auto Command::WithStderr(const Stdio& cfg) noexcept -> Command&
     return *this;
 }
 
+auto Command::WithDeathTimeout(std::chrono::milliseconds ms) noexcept -> Command&
+{
+    this->n_impl->n_deathTimeout = ms;
+    return *this;
+}
+
 auto Command::WithUID(uid_t uid) noexcept -> Command&
 {
     this->n_impl->n_uid = uid;
@@ -153,7 +159,7 @@ auto Command::WithGroups(Span<gid_t> groups) noexcept -> Command&
 
 auto Command::WithPreExec(const PreExecFun& exec) noexcept -> Command&
 {
-    this->n_impl->n_exec.Replace(exec);
+    (void)this->n_impl->n_exec.Replace(exec);
     return *this;
 }
 

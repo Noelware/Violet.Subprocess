@@ -28,6 +28,8 @@
 #include <cerrno>
 #include <unistd.h>
 
+using namespace std::chrono_literals;
+
 // NOLINTBEGIN(google-build-using-namespace)
 using namespace violet;
 using namespace violet::subprocess;
@@ -385,4 +387,56 @@ TEST(Stdio, PipeIntoFileWritesOutput)
 
     String str(buf.begin(), buf.end());
     EXPECT_EQ(str, "piped into this file\n");
+}
+
+TEST(SubprocessTimeout, DeathTimeoutKillsProcess)
+{
+    auto program = runfiles::Get("tests/runfiles/hang");
+    ASSERT_TRUE(program) << "runfile `tests/runfiles/hang' failed";
+
+    auto before = std::chrono::steady_clock::now();
+    auto result = Command(*program).WithDeathTimeout(200ms).Output();
+    ASSERT_FALSE(result);
+
+    auto elapsed = std::chrono::steady_clock::now() - before;
+    EXPECT_LT(elapsed, 2s);
+}
+
+TEST(SubprocessTimeout, ZeroTimeoutImmediateKill)
+{
+    auto program = runfiles::Get("tests/runfiles/hang");
+    ASSERT_TRUE(program) << "runfile `tests/runfiles/hang' failed";
+
+    auto before = std::chrono::steady_clock::now();
+    auto result = Command(*program).WithDeathTimeout(0ms).Output();
+    ASSERT_FALSE(result);
+
+    auto elapsed = std::chrono::steady_clock::now() - before;
+    EXPECT_LT(elapsed, 1s);
+}
+
+TEST(SubprocessTimeout, ProcessExitsBeforeTimeout)
+{
+    auto program = runfiles::Get("tests/runfiles/hang");
+    ASSERT_TRUE(program) << "runfile `tests/runfiles/hang' failed";
+
+    auto result = Command(*program).WithArg("--exit-after=100").WithDeathTimeout(5s).Output();
+    ASSERT_TRUE(result) << "failed to spawn subprocess with program [" << *program << "]: " << result.Error();
+    EXPECT_EQ(result->Status.Code(), 0);
+}
+
+TEST(SubprocessTimeout, ProcessRespectsSigterm)
+{
+    auto program = runfiles::Get("tests/runfiles/hang");
+    ASSERT_TRUE(program) << "runfile `tests/runfiles/hang' failed";
+
+    auto child = Command(*program).WithArg("--respect-sigterm").WithDeathTimeout(1s).Spawn();
+    ASSERT_TRUE(child) << "failed to spawn subprocess with program [" << *program << "]: " << child.Error();
+
+    auto killed = child->Kill(SIGTERM);
+    ASSERT_TRUE(killed) << "child failed to be killed: " << killed.Error();
+
+    auto result = child->Wait();
+    ASSERT_TRUE(result) << "failed to wait: " << result.Error();
+    EXPECT_EQ(result->Signal(), SIGTERM);
 }
