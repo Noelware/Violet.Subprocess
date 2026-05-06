@@ -21,12 +21,12 @@
 
 bazel_dep(name = "googletest", version = "1.17.0.bcr.2")
 bazel_dep(name = "liburing", version = "2.14")
-bazel_dep(name = "violet", version = "26.05.08")
+bazel_dep(name = "violet", version = "26.06.04")
 archive_override(
     module_name = "violet",
-    integrity = "sha256-sopnCcGwq6pn+iIB/r6Pj2+Sz+DF70u8n/dVLiDIfsg=",
+    integrity = "sha256-m6lMMBvyzEdIfLdh8ZbBZndJSehDTuczEdj1Gw+c6e0=",
     urls = [
-        # "https://artifacts.noelware.org/bazel-registry/violet/26.05.08/bazeldist.tgz",
-        "https://github.com/Noelware/violet/releases/download/26.05.08/bazeldist.tgz",
+        # "https://artifacts.noelware.org/bazel-registry/violet/26.06.04/bazeldist.tgz",
+        "https://github.com/Noelware/violet/releases/download/26.06.04/bazeldist.tgz",
     ],
 )

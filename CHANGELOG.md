@@ -9,12 +9,12 @@ availableAt:
 ### unreleased
 **Git History**: <https://github.com/Noelware/Violet.Subprocess/compare/26.04...master>
 
-### 26.05
+### 26.06
 - Add **WithDeathTimeout** to `violet::Subprocess` ([`@auguwu`])
 - Improve interface for building Noelware.Violet.Subprocess as a shared object ([`@auguwu`])
-- Update **Noelware.Violet** frameworks to 26.05.08 ([`@auguwu`])
+- Update **Noelware.Violet** frameworks to 26.06.04 ([`@auguwu`])
 
-**Git History**: <https://github.com/Noelware/Violet.Subprocess/compare/26.04...26.05>
+**Git History**: <https://github.com/Noelware/Violet.Subprocess/compare/26.04...26.06>
 
 ### 26.04
 🐻‍❄️ x 🦊 = 🩷🖤
