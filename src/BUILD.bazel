@@ -26,7 +26,7 @@ violet_cc_library(
     hdrs = ["//include/violet/Subprocess/Runtime:Info.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "@violet//violet/experimental:smol_string",
+        "@violet//violet:smol_string",
     ],
 )
 

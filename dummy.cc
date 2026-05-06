@@ -23,7 +23,7 @@
 
 namespace {
 
-#if defined(VIOLET_CLANG) || defined(VIOLET_GCC)
+#if VIOLET_COMPILER(CLANG) || VIOLET_COMPILER(GCC)
 #if VIOLET_HAS_ATTRIBUTE(visibility)
 #define VIOLET_HIDE __attribute__((visibility("hidden")))
 #endif
@@ -31,7 +31,7 @@ namespace {
 VIOLET_DIAGNOSTIC_PUSH
 VIOLET_DIAGNOSTIC_IGNORE("-Wunused-function")
 
-#elif defined(VIOLET_MSVC)
+#elif VIOLET_COMPILER(MSVC)
 #define VIOLET_HIDE
 #endif
 
@@ -40,7 +40,7 @@ VIOLET_HIDE void __dummy()
     // this will be hidden by the linker, this is force Bazel to build as both a dynamic and static library
 }
 
-#if defined(VIOLET_CLANG) || defined(VIOLET_GCC)
+#if VIOLET_COMPILER(CLANG) || VIOLET_COMPILER(GCC)
 VIOLET_DIAGNOSTIC_POP
 #endif
 

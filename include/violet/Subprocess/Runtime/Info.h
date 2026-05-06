@@ -23,7 +23,7 @@
 
 #include "violet/Subprocess/detail/config.h"
 
-#include <violet/Experimental/SmolString.h>
+#include <violet/SmolString.h>
 
 namespace violet::subprocess {
 
@@ -49,6 +49,11 @@ constexpr static const int MONTH = (VERSION / 10000) % 100;
 /// The patch component; value of `0` indicates no patch.
 constexpr static const int PATCH = (VERSION / 100) % 100;
 
+#if VIOLET_COMPILER(CLANG) || VIOLET_COMPILER(GCC)
+VIOLET_DIAGNOSTIC_PUSH
+VIOLET_DIAGNOSTIC_IGNORE("-Wunused-const-variable")
+#endif
+
 /// The build component; only available in dev builds.
 constexpr static const int BUILD = VERSION % 100;
 
@@ -58,6 +63,10 @@ constexpr static const bool DEVBUILD = true;
 #else
 /// Returns **true** if this is a development build.
 constexpr static const bool DEVBUILD = false;
+#endif
+
+#if VIOLET_COMPILER(CLANG) || VIOLET_COMPILER(GCC)
+VIOLET_DIAGNOSTIC_POP
 #endif
 
 /// Returns the library version as a human-readable string.
@@ -89,14 +98,14 @@ constexpr static const bool DEVBUILD = false;
 /// ```cpp
 /// Version() == "2026.01-dev.5"
 /// ```
-VIOLET_SUBPROCESS_API constexpr auto Version() noexcept -> experimental::SmolString<256>
+VIOLET_SUBPROCESS_API constexpr auto Version() noexcept -> SmolString<256>
 {
     using namespace std::string_view_literals;
 
-    experimental::SmolString<256> smol;
+    SmolString<256> smol;
     smol.AppendFormatted("{}.{:02}", YEAR, MONTH);
 
-    if (PATCH > 0) {
+    if constexpr (PATCH > 0) {
         smol.AppendFormatted(".{:02}", PATCH);
     }
 
