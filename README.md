@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> As of **May 24th, 2026**, the framework has moved into the `violet` repository which provides macOS support as well. This is now available under Violet `26.07`.
+
 ### 🌺💜 `Violet.Subprocess`
 #### *C++20 framework for spawning child processes in a cross-platform, secure way*
 
